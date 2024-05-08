@@ -48,8 +48,8 @@ const User = new mongoose.Schema({
     default: "public",
   },
   otp: {
-    type: String,
-    default: "",
+    type: Number,
+    default: 0,
   },
   isVarify: {
     type: Boolean,

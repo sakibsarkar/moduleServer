@@ -1,8 +1,8 @@
+import bycript from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import userModel from "../models/userModel";
 import { generateOtp } from "../utils/gtOtp";
 import sendMessage from "../utils/sendMessage";
-
 export const register = async (
   req: Request,
   res: Response,
@@ -29,8 +29,14 @@ export const register = async (
       "varify Your OTP bruhh..",
       `<p>${otp}</p>`
     );
-    const result = await userModel.create({ ...body, otp: otp });
-    res.send(result);
+
+    const hashPass = await bycript.hash(body.password, 15);
+    const result = await userModel.create({
+      ...body,
+      otp: otp,
+      password: hashPass,
+    });
+    res.send({ result, otp: 0 });
   } catch (err) {
     console.log(err);
   }
@@ -41,13 +47,21 @@ export const login = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email } = req.body;
+  const { email, password } = req.body;
   const user = await userModel.findOne({ email: email });
   if (!user) {
     return res.send({ msg: `user not found for ${email}` });
   }
-
-  res.send({ succes: true, token: "ai nao tomar token kaw ke dio na" });
+  if (!password) return;
+  const isMatchedPass = await bycript.compare(password, user.password);
+  if (!isMatchedPass) {
+    return res.status(400).send({ msg: "Wrong password" });
+  }
+  res.send({
+    succes: true,
+    token: "ai nao tomar token kaw ke dio na",
+    user: { ...user.toObject(), password: "*****" },
+  });
 };
 
 export const verifyOTP = async (

@@ -5,5 +5,5 @@ const router = express.Router();
 
 router.post("/login", login);
 router.post("/register", register);
-router.post("/varify", verifyOTP);
+router.post("/verify", verifyOTP);
 export default router;
